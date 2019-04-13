@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Creates SG and rules with in a VPC
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket Nmae
+    Type: String
+    Default: cfntmplates
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Existing VPC
+
+Resources:
+  CreateSG: 
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join [ "", [ 'https://s3.amazonaws.com/', !Ref S3Bucket , '/sg.yml' ] ]
+      Parameters:
+        myVPC: !Ref myVPC
+      TimeoutInMinutes: 10   
+  UpdateSGRule:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join [ "", [ 'https://s3.amazonaws.com/', !Ref S3Bucket , '/sgrules.yml' ] ]
+      Parameters:
+        GroupId: !GetAtt CreateSG.Outputs.InstanceSecurityGroup
+          #Fn::ImportValue: !Sub ${AWS::StackName}-InstanceSecurityGroup
+          
+      TimeoutInMinutes: 10   
